@@ -1,0 +1,137 @@
+[core]
+        fsyncobjectfiles = true
+        preloadindex = true
+
+	      # Make `git rebase` safer on macOS.
+	      # More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
+	      trustctime = false
+
+      	# Prevent showing files whose names contain non-ASCII symbols as unversioned.
+      	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
+      	precomposeunicode = false
+
+      	# Speed up commands involving untracked files such as `git status`.
+      	# https://git-scm.com/docs/git-update-index#_untracked_cache
+      	untrackedCache = true
+
+[user]
+        email = kevin.de.koninck92@gmail.com
+        name = Kevin De Koninck
+
+[diff]
+        algorithm = patience
+      	# Detect copies as well as renames.
+      	renames = copies
+
+[diff "bin"]
+	      # Use `hexdump` to diff binary files.
+	      textconv = hexdump -v -C
+
+[pull]
+        rebase = true
+
+[fetch]
+        prune = true
+
+[merge]
+	      # Include summaries of merged commits in newly created merge commit messages
+	      log = true
+
+[alias]
+        lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+        mylog = log --author=\"kdekoninck\"
+        sidediff = !git difftool -y -x \"colordiff -y -W $(tput cols)\" | less -R
+        br = branch
+        sh = show
+        st = status
+        ch = checkout
+        local = cherry -v
+        localOfAllBrances = log --branches --not --remotes
+        lastlog = log -n 1
+        tags = tag -l
+      	branches = branch --all
+	      remotes = remote --verbose
+        aliases = config --get-regexp alias
+        whoami = config user.email
+      	# Find branches containing commit
+      	fb = "!f() { git branch -a --contains $1; }; f"
+	      # Find tags containing commit
+	      ft = "!f() { git describe --always --contains $1; }; f"
+	      # Find commits by source code
+	      fc = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short -S$1; }; f"
+	      # Find commits by commit message
+	      fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
+
+
+[push]
+        default = upstream
+
+[apply]
+	      # Detect whitespace errors when applying a patch.
+	      whitespace = fix
+
+[branch]
+	      # Show most recently changed branches first.
+	      sort = -committerdate
+
+[color]
+        ui = true
+        diff = auto
+        status = auto
+        branch = auto
+        interactive = auto
+        grep = auto
+        pager = true
+
+[color "status"]
+        changed = cyan normal bold
+        untracked = red normal bold
+
+[color "diff"]
+        old = red bold
+        new = green bold
+        meta = yellow
+        frag = magenta bold
+        commit = yellow bold
+        whitespace = red reverse
+
+[color "branch"]
+        current = green
+        local = white
+        remote = cyan
+        upstream = bold blue
+
+[color "grep"]
+        linenumber = yellow bold
+        filename = magenta
+
+[pager]
+        diff = diff-highlight | less
+        log = diff-highlight | less
+        show = diff-highlight | less
+[color "diff-highlight"]
+        oldNormal = red bold
+        oldHighlight = red bold 52
+        newNormal = green bold
+        newHighlight = green bold 22
+
+[grep]
+        linenumber = true
+
+[log]
+        decorate = auto
+
+# URL shorthands
+[url "git@github.com:"]
+      	insteadOf = "gh:"
+      	pushInsteadOf = "github:"
+      	pushInsteadOf = "git://github.com/"
+[url "git://github.com/"]
+      	insteadOf = "github:"
+[url "git@gist.github.com:"]
+      	insteadOf = "gst:"
+      	pushInsteadOf = "gist:"
+      	pushInsteadOf = "git://gist.github.com/"
+[url "git://gist.github.com/"]
+      	insteadOf = "gist:"
+

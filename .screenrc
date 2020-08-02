@@ -1,0 +1,62 @@
+startup_message off
+vbell off
+defscrollback 100000
+escape ^Ff
+altscreen on
+
+# Always start `screen` with UTF-8 enabled (`screen -U`)
+defutf8 on
+
+bindkey "^[[11~" screen            # F1         - new screen (C-a c)
+bindkey "^[[12~" split -v          # F2         - split vertical (C-a |)
+bindkey "^[[13~" split             # F3         - split horizontal (C-a S)
+bindkey "^[[14~" only              # F4         - delete regions apart current (C-a Q)
+bindkey "^[[15~" focus up          # F5         - go to prev region (C-a <tab>)
+bindkey "^[[17~" focus             # F6         - go to next region (C-a <tab>)
+bindkey "^[[18~" copy              # F7         - start scroll mode (C-a [)
+bindkey "^[[19~" paste             # F8         - stop scroll mode (C-a ])
+bindkey "^[[20~" silence           # F9         - start/stop monitoring activity (C-a _)
+bindkey "^[[21~" prev              # F10        - go to prev window (C-a p)
+bindkey "^[[23~" next              # F11        - go to next window (C-a n)
+bindkey "^[[24~" windowlist -b     # F12        - show window list (C-a ")
+
+#bindkey "^[OA" focus up            # Ctrl-up    - go to prev region (C-a <tab>)
+#bindkey "^[[1;5A" focus up            # Ctrl-up    - go to prev region (C-a <tab>)
+bindkey "^[[A" focus up            # Ctrl-up    - go to prev region (C-a <tab>)
+
+#bindkey "^[OB" focus               # Ctrl-down  - go to next region (C-a <tab>)
+#bindkey "^[[1;5B" focus               # Ctrl-down  - go to next region (C-a <tab>)
+bindkey "^[[B" focus               # Ctrl-down  - go to next region (C-a <tab>)
+
+#bindkey "^[OD" prev                # Ctrl-left  - go to prev window (C-a p)
+#bindkey "^[[1;5D" prev                # Ctrl-left  - go to prev window (C-a p)
+bindkey "^[[D" prev                # Ctrl-left  - go to prev window (C-a p)
+
+#bindkey "^[OC" next                # Ctrl-right - go to next window (C-a n)
+#bindkey "^[[1;5C" next                # Ctrl-right - go to next window (C-a n)
+bindkey "^[[C" next                # Ctrl-right - go to next window (C-a n)
+
+bindkey -k k1 screen               # F1         - new screen (C-a c)
+bindkey -k k2 split -v             # F2         - split vertical (C-a |)
+bindkey -k k3 split                # F3         - split horizontal (C-a S)
+bindkey -k k4 only                 # F4         - delete regions apart current (C-a Q)
+bindkey -k k5 focus up             # F5         - go to prev region (C-a <tab>)
+bindkey -k k6 focus                # F6         - go to next region (C-a <tab>)
+bindkey -k k7 copy                 # F7         - start scroll mode (C-a [)
+bindkey -k k8 paste                # F8         - stop scroll mode (C-a ])
+bindkey -k k9 silence              # F9         - start/stop monitoring activity (C-a _)
+bindkey -k k10 prev                # F10        - go to prev window (C-a p)
+bindkey -k k11 next                # F11        - go to next window (C-a n)
+bindkey -k k12 windowlist -b       # F12        - show window list (C-a ")
+bindkey ^[[1;5A focus up           # Ctrl-up    - go to prev region (C-a <tab>)
+bindkey ^[[1;5B focus              # Ctrl-down  - go to next region (C-a <tab>)
+bindkey ^[[1;5D prev               # Ctrl-left  - go to prev window (C-a p)
+bindkey ^[[1;5C next               # Ctrl-right - go to next window (C-a n)
+
+# Customize the status line
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'   # 256-bit color support
+backtick 1 0 10 whoami            # https://superuser.com/questions/594753/gnu-screen-run-arbitrary-command-in-the-status-bar
+hardstatus alwayslastline
+# hardstatus string '%{= kG}[ %{= kr}%1`%{= kw}@%{= kG}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B}%c %{g}]'
+hardstatus string '%{= b} %{= d}%-w%{= r}[%{= w}%n %t%{= r}]%{= d}%+w %-='
+
