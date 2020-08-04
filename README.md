@@ -31,7 +31,7 @@ chmod +x init_dotfiles.sh
 
 # Remove repo
 cd /tmp
-rm -rf macOS-setup-script
+rm -rf dotfiles
 ```
 
 # Initialise macOS
@@ -76,7 +76,7 @@ chmod +x init_dotfiles.sh
 
 # Remove repo
 cd /tmp
-rm -rf macOS-setup-script
+rm -rf dotfiles
 ```
 **Note:** See config.ini to add more brew, brew cask, ... options.
 
