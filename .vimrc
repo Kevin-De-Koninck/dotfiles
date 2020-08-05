@@ -30,7 +30,7 @@ set paste               " Do not try to smart-paste (disable auto comment all li
 "set number             " Enable line numbers
 set ruler               " Enable line number at bottom right
 set backspace=indent,eol,start " Normal backspace functionality in insert mode
-set scrolloff=3         " Start scrolling three lines before the horizontal window border
+"set scrolloff=3         " Start scrolling three lines before the horizontal window border
 set tabstop=2 softtabstop=0 expandtab shiftwidth=2 smarttab
 
 " Centralize backups, swapfiles and undo history
