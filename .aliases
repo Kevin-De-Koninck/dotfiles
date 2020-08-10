@@ -20,7 +20,7 @@ alias ll="ls -lAhF ${colorflag}"
 alias lsd="ls -lF ${colorflag} | grep --color=never '^d'"
 
 # Always use color output for `ls`
-alias ls="command ls ${colorflag}"
+alias ls="ls ${colorflag}"
 
 # Colored tree command
 alias tree='tree -C'
@@ -76,10 +76,6 @@ for method in GET HEAD POST PUT DELETE TRACE OPTIONS; do
 	alias "${method}"="lwp-request -m '${method}'"
 done
 
-# Stuff I never really use but cannot delete either because of http://xkcd.com/530/
-alias stfu="osascript -e 'set volume output muted true'"
-alias pumpitup="osascript -e 'set volume output volume 100'"
-
 # Reload the shell (i.e. invoke as a login shell)
 alias reload="exec ${SHELL} -l"
 
@@ -132,5 +128,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   
   # Lock the screen (when going AFK)
   alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
+  
+  # Stuff I never really use but cannot delete either because of http://xkcd.com/530/
+  alias stfu="osascript -e 'set volume output muted true'"
+  alias pumpitup="osascript -e 'set volume output volume 100'"
 fi
 
