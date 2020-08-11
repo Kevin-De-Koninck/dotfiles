@@ -3,6 +3,8 @@
 # Globals
 SCRIPT_DIR="$(dirname "${0}")"
 
+mkdir -p ~/bin
+
 # Print a colored message
 # Arguments:
 #   - SEV: The sevirity of the log (DEBUG, INFO, SUCCESS, ERROR)
