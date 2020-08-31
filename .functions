@@ -228,6 +228,66 @@ function cheat {
   curl cheat.sh/$1
 }
 
+# Retry a command
+# Example usage: retry 5 60 docker pull .....
+#!/usr/bin/env sh
+
+function retry()
+{
+  if [ $# -lt 3 ]
+  then
+    echo "Usage: $0 <nr of attempts> <sleep between attempts> <your command>"
+    echo "Example: $0 10 30 docker pull url/container:version"
+    return 1
+  fi
+  MAX_ATTEMPT=$1
+  SLEEP_TIME=$2
+  shift 2
+
+  re='^[0-9]+$'
+  if ! [[ ${MAX_ATTEMPT} =~ $re ]]
+  then
+    echo "error: number of attempts should be a number." >&2; return 1
+  fi
+  if ! [[ ${SLEEP_TIME} =~ $re ]]
+  then
+    echo "error: sleep between attempts should be a number." >&2; return 1
+  fi
+
+  COMMAND="$@"
+  RET=1
+  COUNT=0
+
+  # Backup the value of 'set -e/+e'. Then disable.
+  if [[ "$-" == *"e"* ]] ; then SET_E_WAS_SET=true ; fi
+  set +e
+
+  until [ ${RET} -eq 0 ]
+  do
+    COUNT=$((COUNT+1))
+    if [ ${COUNT} -gt ${MAX_ATTEMPT} ]
+    then
+      break
+    fi
+    eval ${COMMAND}
+    RET=$?
+    if [ ${RET} -ne 0 ]
+    then
+      if [  ${COUNT} -eq ${MAX_ATTEMPT} ]
+      then
+        echo "${COMMAND} failed (all ${MAX_ATTEMPT} attempts failed)".
+      else
+        echo "${COMMAND} failed (attempt ${COUNT} of ${MAX_ATTEMPT}), sleeping ${SLEEP_TIME} seconds and retrying..."
+        sleep ${SLEEP_TIME}
+      fi
+    else
+      echo "${COMMAND} succeeded (attempt ${COUNT} of ${MAX_ATTEMPT})."
+    fi
+  done
+
+  if [ "${SET_E_WAS_SET}" = true ] ; then set -e ; fi
+  return ${RET}
+}
 
 # MACOS ONLY
 if [[ "$OSTYPE" == "darwin"* ]]; then                                                                                               
