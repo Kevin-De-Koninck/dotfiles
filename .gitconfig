@@ -66,10 +66,6 @@
 [push]
         default = upstream
 
-[apply]
-	      # Detect whitespace errors when applying a patch.
-	      whitespace = fix
-
 [branch]
 	      # Show most recently changed branches first.
 	      sort = -committerdate
