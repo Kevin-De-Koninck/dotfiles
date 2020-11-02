@@ -289,6 +289,18 @@ function retry()
   return ${RET}
 }
 
+function tail_highlight () {
+  local LOCAL_FILE=${1}
+  local LOCAL_HIGHLIGHT_WORD=${2}
+  if [ -z "${LOCAL_FILE}" ]; then
+    echo "[ERROR] '${0}' requires a first argument to specify which file needs to be tailed."
+  elif [ -z "${LOCAL_HIGHLIGHT_WORD}" ]; then
+    echo "[ERROR] '${0}' requires a second argument to specify which string needs to be highlighted."
+  else
+    tail -f "${LOCAL_FILE}" | sed "s/${LOCAL_HIGHLIGHT_WORD}/$(printf '\033')[31m&$(printf '\033')[0m/"
+  fi
+}
+
 # MACOS ONLY
 if [[ "$OSTYPE" == "darwin"* ]]; then                                                                                               
 
