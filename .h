@@ -13,18 +13,18 @@ F12                              show window list (C-a ")
 ============ Ansible ============
 - debug: var=hostvars[inventory_hostname]
 ============ Git ================
-git pull --rebase --prune && git submodule update --init --recursive
+git pull --rebase --prune && git submodule update --init --recursive [--remote]
 ============ MPD ================
-./tools/build/build.sh -p deployer -b test/bundle_config.yml --tag $(whoami)
+./tools/build/build.sh -p deployer -b test/bundle_config.yml --tag test --version 1.2.3-45
 #
-tools/run-develop-container.sh --build
-export PYTHONPATH=${PWD}/tools/pytest
-export ANSIBLE_ACTION_PLUGINS=$(pwd)/plugins/action/
-export ANSIBLE_FORCE_COLOR=True
-export IMAGE_TO_TEST=spvss-linear-video-deployer-devel-docker.dockerhub.synamedia.com/media-plane-deployer-test:kdekoninck
-#
-./tools/prepare_offline_data.py -f deployer/orchestration/bundle_config.yml -o bin -m v19.0 -t
-./tools/prepare_offline_data.py -f deployer/orchestration-rke/bundle_config.yml -o bin -m v19.0 -t
+./mpd_framework/tools/run-develop-container.sh --build
 
+export PYTHONPATH=${PWD}/tools/pytest
+export ANSIBLE_ACTION_PLUGINS=$(pwd)/mpd_framework/plugins/action/
+export ANSIBLE_FORCE_COLOR=True
+
+export IMAGE_TO_TEST=spvss-linear-video-deployer-devel-docker.dockerhub.synamedia.com/media-plane-deployer-test:1.2.3-45
+#
+./mpd_framework/tools/prepare_offline_data.py -f deployer/vn-k8s/bundle_config.yml -o bin -m v20.0 -t
 EOF
 }
