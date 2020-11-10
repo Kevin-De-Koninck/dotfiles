@@ -134,3 +134,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   alias pumpitup="osascript -e 'set volume output volume 100'"
 fi
 
+# Keep last to remove 'nocorrect' when using sudo
+alias sudo='nocorrect sudo'
