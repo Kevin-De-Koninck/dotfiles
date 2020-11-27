@@ -1,0 +1,203 @@
+#!/bin/bash
+
+# ------------------------------------------------------------------------------
+# VARIABLES AND DEFAULTS
+# ------------------------------------------------------------------------------
+
+CURRENT_DIR="$(realpath $0)"
+DATA_DIR="${CURRENT_DIR}/data"
+
+ACTION="${1}"
+
+
+# ------------------------------------------------------------------------------
+# HELPER FUNCTIONS
+# ------------------------------------------------------------------------------
+
+echo_color () {
+  local COLOR="${1}"
+  local MESSAGE="${2}"
+
+  local NO_COLOR='\033[0m'
+
+  case "${COLOR}" in
+    "red")
+      COLOR='\033[0;31m'
+      ;;
+    "green")
+      COLOR='\033[0;32m'
+      ;;
+    "yellow")
+      COLOR='\033[0;33m'
+      ;;
+    "blue")
+      COLOR='\033[0;34m'
+      ;;
+    "purple")
+      COLOR='\033[0;35m'
+      ;;
+    "cyan")
+      COLOR='\033[0;36m'
+      ;;
+    "grey")
+      COLOR='\033[à;37m'
+    *)
+      log "ERROR" "Unknown loc color '${COLOR}'."
+  esac
+
+  echo -e "${COLOR}${MESSAGE}${NO_COLOR}"
+}
+
+log () {
+  local SEVERITY="${1}"
+  local MESSAGE="${2}"
+
+  echo_color "red" "[${SEVERITY}] ${MESSAGE}"
+  echo
+
+  if [[ "${SEVERITY}" == "ERROR" ]]; then
+    show_help
+    exit 1
+  fi
+}
+
+
+# ------------------------------------------------------------------------------
+# COMMANDS
+# ------------------------------------------------------------------------------
+
+show_help () {
+  echo_color "cyan" "Commands:"
+  cat << EOF
+  cheat list
+  cheat list [snippets|sections|all]
+  cheat show [snippet|section] <NAME>
+  cheat show all [snippets|sections]
+  cheat <BINARY> [online]
+  cheat grep <STRING>
+
+EOF
+
+  echo_color "cyan" "Cheat data location:"
+  echo "  ${DATA_DIR}"
+  echo
+}
+
+list_all () {
+  echo
+}
+
+list_snippets () {
+  echo
+}
+
+list_sections () {
+  echo
+}
+
+show_snippet () {
+  local NAME="${1}"
+  echo
+}
+
+show_section () {
+  local NAME="${1}"
+  echo
+}
+
+show_all () {
+  local TYPE="${1}"
+  echo
+}
+
+grep_string () {
+  local STRING="${1}"
+  echo
+}
+
+cheat_binary () {
+  local BINARY="${1}"
+  echo
+}
+
+# ------------------------------------------------------------------------------
+# MAIN
+# ------------------------------------------------------------------------------
+
+case "${ACTION}" in
+  "help"|"-h"|"--help")
+    show_help
+    ;;
+
+  "list")
+    TYPE="${2}"
+    if [[ -z ${TYPE} ]]; then
+      list_all
+    else
+      case "${TYPE}" in
+        "snippets")
+          list_snippets
+        ;;
+        "sections")
+          list_sections
+        ;;
+        "all")
+          list_all
+        ;;
+        *)
+          log "ERROR" "Action 'list' has no type '${TYPE}'. Valid types are: 'snippets', 'sections', 'all'."
+      esac
+    fi
+    ;;
+
+  "show")
+    TYPE="${2}"
+    if [[ -z ${TYPE} ]]; then
+      log "ERROR" "Action 'show' requires a type. Valid types are: 'snippet', 'section', 'all'."
+    else
+      case "${TYPE}" in
+        "snippet")
+          NAME="${3}"
+          show_snippet "${NAME}"
+        ;;
+        "section")
+          NAME="${3}"
+          show_section "${NAME}"
+        ;;
+        "all")
+          TYPE="${3}"
+          if [[ -z ${TYPE} ]]; then
+            TYPE="all"
+          fi
+          show_all "${TYPE}"
+        ;;
+        *)
+          log "ERROR" "Action 'list' has no type '${TYPE}'. Valid types are: 'snippet', 'section', 'all'."
+      esac
+    fi
+    ;;
+
+  "grep")
+      STRING="${2}"
+      if [[ -z ${STRING} ]]; then
+        log "ERROR" "Please provide a string to grep."
+      fi
+      grep_string "${STRING}"
+    ;;
+
+  *)
+    BINARY="${ACTION}"
+    ONLINE="${2}"
+    if [[ -z ${ONLINE} ]]; then
+      ONLINE="False"
+    elif [[ "${ONLINE}" == "online" ]]; then
+      ONLINE="True" 
+    else
+      log "ERROR" "Binary cheat has no option '${ONLINE}'. Only 'online' is a valid option or provide none."
+    fi
+    cheat_binary "${BINARY}" "${ONLINE}"
+    ;;
+esac
+
+exit 0
+
