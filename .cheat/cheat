@@ -4,10 +4,15 @@
 # VARIABLES AND DEFAULTS
 # ------------------------------------------------------------------------------
 
-CURRENT_DIR="$(realpath $0)"
-DATA_DIR="${CURRENT_DIR}/data"
-
 ACTION="${1}"
+
+CURRENT_DIR="$(dirname $(realpath ${0}))"
+DATA_DIR="${CURRENT_DIR}/data"
+COMMANDS_DIR="${DATA_DIR}/comands"
+SNIPPET_SECTIONS_DIR="${DATA_DIR}/snippets"
+
+ALL_SECTIONS=( $(ls $SNIPPET_SECTIONS_DIR) )
+
 
 
 # ------------------------------------------------------------------------------
@@ -41,6 +46,7 @@ echo_color () {
       ;;
     "grey")
       COLOR='\033[à;37m'
+      ;;
     *)
       log "ERROR" "Unknown loc color '${COLOR}'."
   esac
@@ -69,12 +75,17 @@ log () {
 show_help () {
   echo_color "cyan" "Commands:"
   cat << EOF
-  cheat list
-  cheat list [snippets|sections|all]
-  cheat show [snippet|section] <NAME>
-  cheat show all [snippets|sections]
-  cheat <BINARY> [online]
+  cheat list all snippets
+  cheat list sections
+  cheat list <SECTION> snippets
+
+  cheat show <SECTION> snippet
+  cheat show <SECTION> snippet <SNIPPET_NAME>
+  cheat show all [<SECTION>] snippets
+
   cheat grep <STRING>
+
+  cheat <BINARY> [online]
 
 EOF
 
@@ -83,41 +94,81 @@ EOF
   echo
 }
 
-list_all () {
-  echo
-}
+list_all_snippets () {
+  echo "cheat list all snippets"
 
-list_snippets () {
-  echo
+  # list all snippets in all sections
+  # Output snippets in sections:
+  # <SECTION>
+  #   <SNIPPET_NAME>
+  #   <SNIPPET_NAME>
 }
 
 list_sections () {
-  echo
+  echo "cheat list sections"
+
+  echo_color "cyan" "The following sections exist:"
+  for SECTION in "${ALL_SECTIONS[@]}"; do
+    echo "  ${SECTION}"
+  done
+}
+
+list_snippets_for_section () {
+  local SECTION="${1}"
+
+  echo "cheat list <SECTION> snippets"
+
+  # List all snippets in said section
+}
+
+show_all_snippets () {
+  echo "cheat show all snippets"
+
+  # Display content of all snippets in all sections
+}
+
+show_all_snippets_for_section () {
+  local SECTION="${1}"
+
+  echo "cheat show all <SECTION> snippets"
+
+  # Display content of all snippets in said section
+}
+
+show_snippet_for_section () {
+  local SECTION="${1}"
+
+  echo "cheat show <SECTION> snippet"
+
+  # Select a snippet in a section that you want to see
+  # echo "There are ${#array[@]} dirs in the current path"; select dir in "${array[@]}"; do echo "you selected ${dir}"'!'; break; done
 }
 
 show_snippet () {
-  local NAME="${1}"
-  echo
-}
+  local SECTION="${1}"
+  local SNIPPET_NAME="${2}"
 
-show_section () {
-  local NAME="${1}"
-  echo
-}
+  echo "cheat show <SECTION> snippet <SNIPPET_NAME>"
 
-show_all () {
-  local TYPE="${1}"
-  echo
+  # Display content of snippet name in section
 }
 
 grep_string () {
   local STRING="${1}"
-  echo
+
+  echo "cheat grep <STRING>"
+
+  # Show results containg string
 }
 
 cheat_binary () {
   local BINARY="${1}"
-  echo
+  local ONLINE="${2}"
+
+  echo "cheat <BINARY> [online]"
+
+  # Display all in commands
+  # If online is True, also use cheat.sh
 }
 
 # ------------------------------------------------------------------------------
@@ -132,47 +183,67 @@ case "${ACTION}" in
   "list")
     TYPE="${2}"
     if [[ -z ${TYPE} ]]; then
-      list_all
+      log "ERROR" "Action 'list' requires a second argument. Refer to the help message for more info."
     else
       case "${TYPE}" in
-        "snippets")
-          list_snippets
+        "all")
+          WHAT="${3}"
+          if [[ "${WHAT}" == "snippets" ]]; then
+            list_all_snippets
+          else
+            log "ERROR" "Action 'list all' requires a third argument. Refer to the help message for more info."
+          fi
         ;;
         "sections")
           list_sections
         ;;
-        "all")
-          list_all
-        ;;
         *)
-          log "ERROR" "Action 'list' has no type '${TYPE}'. Valid types are: 'snippets', 'sections', 'all'."
+          SECTION="${TYPE}"
+          WHAT="${3}"
+          if [[ "${WHAT}" == "snippets" ]]; then
+            list_snippets_for_section "${SECTION}"
+          else
+            log "ERROR" "Action 'list all' requires a third argument. Refer to the help message for more info."
+          fi
       esac
     fi
     ;;
 
   "show")
     TYPE="${2}"
-    if [[ -z ${TYPE} ]]; then
-      log "ERROR" "Action 'show' requires a type. Valid types are: 'snippet', 'section', 'all'."
+    if [[ -z ${3} ]]; then
+      log "ERROR" "Action 'show' requires at least a second and third argument. Refer to the help message for more info."
     else
       case "${TYPE}" in
-        "snippet")
-          NAME="${3}"
-          show_snippet "${NAME}"
-        ;;
-        "section")
-          NAME="${3}"
-          show_section "${NAME}"
-        ;;
         "all")
-          TYPE="${3}"
-          if [[ -z ${TYPE} ]]; then
-            TYPE="all"
+          WHAT="${3}"
+          if [[ "${WHAT}" == "snippets" ]]; then
+            show_all_snippets
+          else
+            SECTION="${WHAT}"
+            WHAT="${4}"
+            if [[ -z ${WHAT} ]]; then
+              log "ERROR" "Action 'show all <SECTION>' requires a fourth argument. Refer to the help message for more info."
+            else
+              show_all_snippets_for_section "${SECTION}"
+            fi
           fi
-          show_all "${TYPE}"
         ;;
         *)
-          log "ERROR" "Action 'list' has no type '${TYPE}'. Valid types are: 'snippet', 'section', 'all'."
+          SECTION="${TYPE}"
+          WHAT="${3}"
+          SNIPPET_NAME="${4}"
+          if [[ -z ${SNIPPET_NAME} ]]; then
+            if [[ -z ${WHAT} ]]; then
+              log "ERROR" "Action 'show <SECTION>' requires a third and optionally fourth argument. Refer to the help message for more info."
+            elif [[ "${WHAT}" != "snippet" ]]; then
+              log "ERROR" "Unknown argument '${WHAT}' for action 'show <SECTION>. Refer to the help message for more info."
+            else
+              show_snippet_for_section "${SECTION}"
+            fi
+          else
+            show_snippet "${SECTION}" "${SNIPPET_NAME}"
+          fi
       esac
     fi
     ;;
