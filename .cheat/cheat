@@ -7,12 +7,34 @@
 ACTION="${1}"
 
 CURRENT_DIR="$(dirname $(realpath ${0}))"
+BIN_DIR="${CURRENT_DIR}/bin"
 DATA_DIR="${CURRENT_DIR}/data"
 COMMANDS_DIR="${DATA_DIR}/comands"
 SNIPPET_SECTIONS_DIR="${DATA_DIR}/snippets"
 
-ALL_SECTIONS=( $(ls $SNIPPET_SECTIONS_DIR) )
+# Configure Bat: https://github.com/sharkdp/bat
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  BAT="${BIN_DIR}/bat_apple_x86_darwin"
+else
+  BAT="${BIN_DIR}/bat_linux_x86_gnu"
+fi
+BAT="${BAT} --color always --decorations always --language bash --style header,plain,grid"
 
+# Colors
+NO_COLOR='\033[0m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+CYAN_BOLD='\033[1;36m'
+GREY='\033[0;90m'
+GREY_BOLD='\033[1;90m'
+
+#    cat "${SECTION_DIR}/${SNIPPET}" \
+#      | sed "s/^# \(.*\)$/$(printf ${GREY_BOLD})#\1 $(printf ${NO_COLOR})/g" \
+#      | sed "s/^##\(.*\)$/$(printf ${GREY})##\1 $(printf ${NO_COLOR})/g"
 
 
 # ------------------------------------------------------------------------------
@@ -23,29 +45,33 @@ echo_color () {
   local COLOR="${1}"
   local MESSAGE="${2}"
 
-  local NO_COLOR='\033[0m'
-
   case "${COLOR}" in
     "red")
-      COLOR='\033[0;31m'
+      COLOR="${RED}"
       ;;
     "green")
-      COLOR='\033[0;32m'
+      COLOR="${GREEN}"
       ;;
     "yellow")
-      COLOR='\033[0;33m'
+      COLOR="${YELLOW}"
       ;;
     "blue")
-      COLOR='\033[0;34m'
+      COLOR="${BLUE}"
       ;;
     "purple")
-      COLOR='\033[0;35m'
+      COLOR="${PURPLE}"
       ;;
     "cyan")
-      COLOR='\033[0;36m'
+      COLOR="${CYAN}"
+      ;;
+    "cyan_bold")
+      COLOR="${CYAN_BOLD}"
       ;;
     "grey")
-      COLOR='\033[à;37m'
+      COLOR="${GREY}"
+      ;;
+    "grey_bold")
+      COLOR="${GREY_BOLD}"
       ;;
     *)
       log "ERROR" "Unknown loc color '${COLOR}'."
@@ -72,8 +98,9 @@ log () {
 # COMMANDS
 # ------------------------------------------------------------------------------
 
+# cheat [help|-h|--help]
 show_help () {
-  echo_color "cyan" "Commands:"
+  echo_color "cyan_bold" "Commands:"
   cat << EOF
   cheat list all snippets
   cheat list sections
@@ -89,7 +116,7 @@ show_help () {
 
 EOF
 
-  echo_color "cyan" "Cheat data location:"
+  echo_color "cyan_bold" "Cheat data location:"
   echo "  ${DATA_DIR}"
   echo
 }
@@ -104,68 +131,104 @@ list_all_snippets () {
   #   <SNIPPET_NAME>
 }
 
+# cheat list sections
 list_sections () {
-  echo "cheat list sections"
+  local ALL_SECTIONS=( $(ls ${SNIPPET_SECTIONS_DIR}) )
 
-  echo_color "cyan" "The following sections exist:"
+  echo_color "cyan_bold" "The following sections exist:"
   for SECTION in "${ALL_SECTIONS[@]}"; do
-    echo "  ${SECTION}"
+    echo "  - ${SECTION}"
   done
 }
 
+# cheat list <SECTION> snippets
 list_snippets_for_section () {
   local SECTION="${1}"
 
-  echo "cheat list <SECTION> snippets"
+  local SECTION_DIR="${SNIPPET_SECTIONS_DIR}/${SECTION}"
+  if [[ ! -d "${SECTION_DIR}" ]]; then
+    log "ERROR" "Section '${SECTION}' does not exist."
+  fi
 
-  # List all snippets in said section
+  echo_color "cyan" "The following snippets exist for section '${SECTION}':"
+  local ALL_SNIPPETS=( $(ls ${SECTION_DIR}) )
+  for SNIPPET in "${ALL_SNIPPETS[@]}"; do
+    echo "  - ${SNIPPET}" | sed 's/_/ /g'
+  done
 }
 
+# cheat show all snippets
 show_all_snippets () {
-  echo "cheat show all snippets"
+  local ALL_SECTIONS=( $(ls ${SNIPPET_SECTIONS_DIR}) )
+  local SECTION_DIR=""
+  local ALL_SNIPPETS=()
 
-  # Display content of all snippets in all sections
+  for SECTION in "${ALL_SECTIONS[@]}"; do
+    SECTION_DIR="${SNIPPET_SECTIONS_DIR}/${SECTION}"
+    ALL_SNIPPETS=( $(ls ${SECTION_DIR}) )
+
+    echo_color "cyan_bold" "All snippets in section '${SECTION}':"
+    echo
+    for SNIPPET in "${ALL_SNIPPETS[@]}"; do
+      ${BAT} "${SECTION_DIR}/${SNIPPET}" --file-name "$(echo ${SNIPPET%.*} | sed 's/_/ /g')"
+    done
+  done
 }
 
+# cheat show all <SECTION> snippets
 show_all_snippets_for_section () {
   local SECTION="${1}"
 
-  echo "cheat show all <SECTION> snippets"
+  local SECTION_DIR="${SNIPPET_SECTIONS_DIR}/${SECTION}"
+  if [[ ! -d "${SECTION_DIR}" ]]; then
+    log "ERROR" "Section '${SECTION}' does not exist."
+  fi
 
-  # Display content of all snippets in said section
+  echo_color "cyan_bold" "All snippets in section '${SECTION}':"
+  echo
+  local ALL_SNIPPETS=( $(ls ${SECTION_DIR}) )
+  for SNIPPET in "${ALL_SNIPPETS[@]}"; do
+    ${BAT} "${SECTION_DIR}/${SNIPPET}" --file-name "$(echo ${SNIPPET%.*} | sed 's/_/ /g')"
+  done
 }
 
+# cheat show <SECTION> snippet
 show_snippet_for_section () {
   local SECTION="${1}"
 
-  echo "cheat show <SECTION> snippet"
+  local SECTION_DIR="${SNIPPET_SECTIONS_DIR}/${SECTION}"
+  if [[ ! -d "${SECTION_DIR}" ]]; then
+    log "ERROR" "Section '${SECTION}' does not exist."
+  fi
 
-  # Select a snippet in a section that you want to see
-  # echo "There are ${#array[@]} dirs in the current path"; select dir in "${array[@]}"; do echo "you selected ${dir}"'!'; break; done
+  local ALL_SNIPPETS=( $(ls ${SECTION_DIR}) )
+  echo_color "cyan" "There are ${#ALL_SNIPPETS[@]} snippets in section '${SECTION}'."
+  echo_color "cyan" "Please select the snippet that you want to view."
+  select SNIPPET in "${ALL_SNIPPETS[@]}"; do
+    ${BAT} "${SECTION_DIR}/${SNIPPET}" --file-name "$(echo ${SNIPPET%.*} | sed 's/_/ /g')"
+    break
+  done
 }
 
+# cheat show <SECTION> snippet <SNIPPET_NAME>
 show_snippet () {
   local SECTION="${1}"
   local SNIPPET_NAME="${2}"
 
-  echo "cheat show <SECTION> snippet <SNIPPET_NAME>"
-
   # Display content of snippet name in section
 }
 
+# cheat grep <STRING>
 grep_string () {
   local STRING="${1}"
-
-  echo "cheat grep <STRING>"
 
   # Show results containg string
 }
 
+# cheat <BINARY> [online]
 cheat_binary () {
   local BINARY="${1}"
   local ONLINE="${2}"
-
-  echo "cheat <BINARY> [online]"
 
   # Display all in commands
   # If online is True, also use cheat.sh
@@ -175,6 +238,7 @@ cheat_binary () {
 # MAIN
 # ------------------------------------------------------------------------------
 
+echo
 case "${ACTION}" in
   "help"|"-h"|"--help")
     show_help
@@ -270,5 +334,6 @@ case "${ACTION}" in
     ;;
 esac
 
+echo
 exit 0
 
