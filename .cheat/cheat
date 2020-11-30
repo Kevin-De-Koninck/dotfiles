@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e -u -o pipefail
 
 # ------------------------------------------------------------------------------
 # VARIABLES AND DEFAULTS
@@ -9,24 +9,19 @@ ACTION="${1}"
 CURRENT_DIR="$(dirname $(realpath ${0}))"
 BIN_DIR="${CURRENT_DIR}/bin"
 DATA_DIR="${CURRENT_DIR}/data"
-COMMANDS_DIR="${DATA_DIR}/comands"
+COMMANDS_DIR="${DATA_DIR}/commands"
 SNIPPET_SECTIONS_DIR="${DATA_DIR}/snippets"
-
-# Configure Bat: https://github.com/sharkdp/bat
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  BAT="${BIN_DIR}/bat_apple_x86_darwin"
-else
-  BAT="${BIN_DIR}/bat_linux_x86_gnu"
-fi
-BAT="${BAT} --color always --decorations always --language bash --style header,plain,grid"
+ALL_SECTIONS=( $(ls ${SNIPPET_SECTIONS_DIR}) )
 
 # Colors
 NO_COLOR='\033[0m'
 RED='\033[0;31m'
+RED_BOLD='\033[1;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
+PURPLE_BOLD='\033[1;35m'
 CYAN='\033[0;36m'
 CYAN_BOLD='\033[1;36m'
 GREY='\033[0;90m'
@@ -49,6 +44,9 @@ echo_color () {
     "red")
       COLOR="${RED}"
       ;;
+    "red_bold")
+      COLOR="${RED_BOLD}"
+      ;;
     "green")
       COLOR="${GREEN}"
       ;;
@@ -60,6 +58,9 @@ echo_color () {
       ;;
     "purple")
       COLOR="${PURPLE}"
+      ;;
+    "purple_bold")
+      COLOR="${PURPLE_BOLD}"
       ;;
     "cyan")
       COLOR="${CYAN}"
@@ -93,6 +94,46 @@ log () {
   fi
 }
 
+set_bat_binary () {
+  # Configure Bat: https://github.com/sharkdp/bat
+  if [[ "${OSTYPE:-}" == "darwin"* ]]; then
+    BAT="${BIN_DIR}/bat_apple_x86_darwin"
+  else
+    BAT="${BIN_DIR}/bat_linux_x86_gnu"
+  fi
+}
+
+print_file () {
+  local FILE="${1}"
+  local FILE_NAME="$(basename ${FILE})"
+  local BAT=""
+
+  set_bat_binary
+
+  ${BAT} \
+    --color always \
+    --decorations always \
+    --paging never \
+    --style header,plain,grid \
+    --file-name "$(echo ${FILE_NAME%.*} | sed 's/_/ /g')" \
+    --language "${FILE_NAME##*.}" \
+    "${FILE}"
+}
+
+print_command () {
+  local LANGUAGE="${1}"
+  local COMMAND="${2}"
+
+  set_bat_binary
+  
+  echo "${COMMAND}" | ${BAT} \
+    --color always \
+    --decorations always \
+    --paging never \
+    --style plain \
+    --language "${LANGUAGE}"
+}
+
 
 # ------------------------------------------------------------------------------
 # COMMANDS
@@ -121,20 +162,25 @@ EOF
   echo
 }
 
+# cheat list all snippets
 list_all_snippets () {
-  echo "cheat list all snippets"
+  local local SECTION_DIR=""
+  local ALL_SNIPPETS=()
 
-  # list all snippets in all sections
-  # Output snippets in sections:
-  # <SECTION>
-  #   <SNIPPET_NAME>
-  #   <SNIPPET_NAME>
+  for SECTION in "${ALL_SECTIONS[@]}"; do
+    SECTION_DIR="${SNIPPET_SECTIONS_DIR}/${SECTION}"
+    ALL_SNIPPETS=( $(ls ${SECTION_DIR}) )
+
+    echo_color "cyan_bold" "All snippets in section '${SECTION}':"
+    for SNIPPET in "${ALL_SNIPPETS[@]}"; do
+      echo "  - ${SNIPPET}"
+    done
+    echo
+  done
 }
 
 # cheat list sections
 list_sections () {
-  local ALL_SECTIONS=( $(ls ${SNIPPET_SECTIONS_DIR}) )
-
   echo_color "cyan_bold" "The following sections exist:"
   for SECTION in "${ALL_SECTIONS[@]}"; do
     echo "  - ${SECTION}"
@@ -159,7 +205,6 @@ list_snippets_for_section () {
 
 # cheat show all snippets
 show_all_snippets () {
-  local ALL_SECTIONS=( $(ls ${SNIPPET_SECTIONS_DIR}) )
   local SECTION_DIR=""
   local ALL_SNIPPETS=()
 
@@ -170,7 +215,7 @@ show_all_snippets () {
     echo_color "cyan_bold" "All snippets in section '${SECTION}':"
     echo
     for SNIPPET in "${ALL_SNIPPETS[@]}"; do
-      ${BAT} "${SECTION_DIR}/${SNIPPET}" --file-name "$(echo ${SNIPPET%.*} | sed 's/_/ /g')"
+      print_file "${SECTION_DIR}/${SNIPPET}"
     done
   done
 }
@@ -188,7 +233,7 @@ show_all_snippets_for_section () {
   echo
   local ALL_SNIPPETS=( $(ls ${SECTION_DIR}) )
   for SNIPPET in "${ALL_SNIPPETS[@]}"; do
-    ${BAT} "${SECTION_DIR}/${SNIPPET}" --file-name "$(echo ${SNIPPET%.*} | sed 's/_/ /g')"
+    print_file "${SECTION_DIR}/${SNIPPET}"
   done
 }
 
@@ -205,7 +250,7 @@ show_snippet_for_section () {
   echo_color "cyan" "There are ${#ALL_SNIPPETS[@]} snippets in section '${SECTION}'."
   echo_color "cyan" "Please select the snippet that you want to view."
   select SNIPPET in "${ALL_SNIPPETS[@]}"; do
-    ${BAT} "${SECTION_DIR}/${SNIPPET}" --file-name "$(echo ${SNIPPET%.*} | sed 's/_/ /g')"
+    print_file "${SECTION_DIR}/${SNIPPET}"
     break
   done
 }
@@ -215,14 +260,72 @@ show_snippet () {
   local SECTION="${1}"
   local SNIPPET_NAME="${2}"
 
-  # Display content of snippet name in section
+  local SECTION_DIR="${SNIPPET_SECTIONS_DIR}/${SECTION}"
+  if [[ ! -d "${SECTION_DIR}" ]]; then
+    log "ERROR" "Section '${SECTION}' does not exist."
+  fi
+
+  local SNIPPET="${SECTION_DIR}/$(ls ${SECTION_DIR} | grep ${SNIPPET_NAME})"
+  if [[ ! -f "${SNIPPET}" ]]; then
+    log "ERROR" "Snippet '${SNIPPET_NAME}' in section '${SECTION}' does not exist."
+  fi
+
+  print_file "${SNIPPET}"
 }
 
 # cheat grep <STRING>
 grep_string () {
-  local STRING="${1}"
+  local GREP_ARGS_AND_STRING="${1}"
+  local FILE=""
+  local OLD_FILE=""
+  local LANGUAGE=""
+  local LINE_NR=""
+  local DATA=""
+  local SECTION=""
+  local SNIPPET_NAME=""
+  local FIRST_RESULT_SHOWN=False
 
-  # Show results containg string
+  grep -rn ${GREP_ARGS_AND_STRING} "${DATA_DIR}" | while read -r RESULT; do
+    FILE="$(echo ${RESULT} | cut -d ':' -f 1)"
+    LANGUAGE="${FILE##*.}"
+    LINE_NR="$(echo ${RESULT} | cut -d ':' -f 2)"
+    DATA="$(echo ${RESULT} | cut -d ':' -f 3-)"
+
+    # Remove common part from file name (data dir prefix)
+    FILE_SHORT=${FILE#"$DATA_DIR/"}
+
+    # If the previous file does not equal the current file, print a devider
+    if [[ "${FILE}" != "${OLD_FILE}" ]]; then
+      if [[ "${FIRST_RESULT_SHOWN}" == "False" ]]; then
+        FIRST_RESULT_SHOWN=True
+      else
+        echo_color "red_bold" "---"
+      fi
+    fi
+    OLD_FILE="${FILE}"
+
+    # If it is a snippet, show the command how to view it
+    TYPE="$(echo ${FILE_SHORT} | cut -d '/' -f 1)"
+    if [[ "${TYPE}" == "snippets" ]]; then
+      SECTION="$(echo ${FILE_SHORT} | cut -d '/' -f 2)"
+      SNIPPET_NAME="$(echo ${FILE_SHORT} | cut -d '/' -f 3)"
+      echo_color "yellow" "Command: cheat show ${SECTION} snippet ${SNIPPET_NAME%.*}"
+
+    # else if it is a command, show the command how to view it
+    else
+      COMMAND_NAME="$(echo ${FILE_SHORT} | cut -d '/' -f 2)"
+      echo_color "yellow" "Command: cheat ${COMMAND_NAME%.*}"
+    fi
+
+    # output line as bat one line no header
+    if [[ "${DATA}" == \#* ]]; then
+      # If the grep result starts with a #, then output the next line too
+      NEXT_LINE="$(grep -A 1 "${DATA}" "${FILE}")"
+      print_command "${LANGUAGE}" "${NEXT_LINE}"
+    else
+      print_command "${LANGUAGE}" "${DATA}"
+    fi
+  done
 }
 
 # cheat <BINARY> [online]
@@ -230,9 +333,24 @@ cheat_binary () {
   local BINARY="${1}"
   local ONLINE="${2}"
 
-  # Display all in commands
-  # If online is True, also use cheat.sh
+  local BINARY_FILE="${COMMANDS_DIR}/${BINARY}.sh"
+  if [[ ! -f "${BINARY_FILE}" ]]; then
+    if [[ "${ONLINE}" == "False" ]]; then
+      echo_color "red_bold" "No custom entry for command '${BINARY}'. Showing online cheats now."
+      ONLINE="True"
+    fi
+  else
+    print_file "${BINARY_FILE}"
+  fi
+
+  if [[ "${ONLINE}" == "True" ]]; then
+    echo
+    echo_color "purple_bold" "All information found on http://cheat.sh:"
+    echo
+    curl "cheat.sh/${BINARY}"
+  fi
 }
+
 
 # ------------------------------------------------------------------------------
 # MAIN
@@ -245,7 +363,7 @@ case "${ACTION}" in
     ;;
 
   "list")
-    TYPE="${2}"
+    TYPE="${2:-}"
     if [[ -z ${TYPE} ]]; then
       log "ERROR" "Action 'list' requires a second argument. Refer to the help message for more info."
     else
@@ -275,7 +393,7 @@ case "${ACTION}" in
 
   "show")
     TYPE="${2}"
-    if [[ -z ${3} ]]; then
+    if [[ -z ${3:-} ]]; then
       log "ERROR" "Action 'show' requires at least a second and third argument. Refer to the help message for more info."
     else
       case "${TYPE}" in
@@ -285,7 +403,7 @@ case "${ACTION}" in
             show_all_snippets
           else
             SECTION="${WHAT}"
-            WHAT="${4}"
+            WHAT="${4:-}"
             if [[ -z ${WHAT} ]]; then
               log "ERROR" "Action 'show all <SECTION>' requires a fourth argument. Refer to the help message for more info."
             else
@@ -296,7 +414,7 @@ case "${ACTION}" in
         *)
           SECTION="${TYPE}"
           WHAT="${3}"
-          SNIPPET_NAME="${4}"
+          SNIPPET_NAME="${4:-}"
           if [[ -z ${SNIPPET_NAME} ]]; then
             if [[ -z ${WHAT} ]]; then
               log "ERROR" "Action 'show <SECTION>' requires a third and optionally fourth argument. Refer to the help message for more info."
@@ -317,12 +435,12 @@ case "${ACTION}" in
       if [[ -z ${STRING} ]]; then
         log "ERROR" "Please provide a string to grep."
       fi
-      grep_string "${STRING}"
+      grep_string "${@:2}"
     ;;
 
   *)
     BINARY="${ACTION}"
-    ONLINE="${2}"
+    ONLINE="${2:-}"
     if [[ -z ${ONLINE} ]]; then
       ONLINE="False"
     elif [[ "${ONLINE}" == "online" ]]; then
