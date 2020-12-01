@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
-set -u set -o pipefail
+set -u
+set -o pipefail
 
 # ------------------------------------------------------------------------------
 # VARIABLES AND DEFAULTS
@@ -101,7 +102,7 @@ set_bat_binary () {
   if [[ "${OSTYPE:-}" == "darwin"* ]]; then
     BAT="${BIN_DIR}/bat_apple_x86_darwin"
   else
-    BAT="${BIN_DIR}/bat_linux_x86_gnu"
+    BAT="${BIN_DIR}/bat_linux_x86_gnu_musl"
   fi
 }
 
