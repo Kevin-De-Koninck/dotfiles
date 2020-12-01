@@ -1,3 +1,7 @@
+[user]
+        email = kdekoninck@synamedia.com
+        name = Kevin De Koninck
+
 [core]
         fsyncobjectfiles = true
         preloadindex = true
@@ -13,10 +17,6 @@
       	# Speed up commands involving untracked files such as `git status`.
       	# https://git-scm.com/docs/git-update-index#_untracked_cache
       	untrackedCache = true
-
-[user]
-        email = kevin.de.koninck92@gmail.com
-        name = Kevin De Koninck
 
 [diff]
         algorithm = patience
