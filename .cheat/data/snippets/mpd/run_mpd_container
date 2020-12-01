@@ -1,0 +1,10 @@
+# shell
+docker run  --rm --interactive --tty --name "$(whoami)-${RANDOM}" \
+            --volume $(pwd)/inventories/k8s-4:/opt/deployer/inventories \
+            spvss-linear-video-deployer-devel-docker.dockerhub.synamedia.com/media-plane-deployer-test:$(whoami) sh
+
+# doc server
+docker run  --rm --interactive --tty --name "$(whoami)-${RANDOM}" \
+            --publish 12345:8000 \
+            spvss-linear-video-deployer-devel-docker.dockerhub.synamedia.com/media-plane-deployer-test:$(whoami) \
+            /bin/bash -c "sleep 15; ping 1.1.1.1 -c 1 > /dev/null; ./run-docs.sh"
