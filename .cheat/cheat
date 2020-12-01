@@ -1,10 +1,12 @@
-#!/bin/bash -e -u -o pipefail
+#!/bin/bash
+set -e
+set -u set -o pipefail
 
 # ------------------------------------------------------------------------------
 # VARIABLES AND DEFAULTS
 # ------------------------------------------------------------------------------
 
-ACTION="${1}"
+ACTION="${1:-}"
 
 CURRENT_DIR="$(dirname $(realpath ${0}))"
 BIN_DIR="${CURRENT_DIR}/bin"
@@ -357,9 +359,16 @@ cheat_binary () {
 # ------------------------------------------------------------------------------
 
 echo
+
+if [[ -z ${ACTION} ]]; then
+  show_help
+  exit
+fi
+
 case "${ACTION}" in
   "help"|"-h"|"--help")
     show_help
+    exit
     ;;
 
   "list")
