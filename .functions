@@ -223,11 +223,6 @@ set_title() {
   fi
 }
 
-# cheat a command
-function cheat {
-  curl cheat.sh/$1
-}
-
 # Retry a command
 # Example usage: retry 5 60 docker pull .....
 #!/usr/bin/env sh
