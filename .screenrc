@@ -20,21 +20,17 @@ bindkey "^[[21~" prev              # F10        - go to prev window (C-a p)
 bindkey "^[[23~" next              # F11        - go to next window (C-a n)
 bindkey "^[[24~" windowlist -b     # F12        - show window list (C-a ")
 
-#bindkey "^[OA" focus up            # Ctrl-up    - go to prev region (C-a <tab>)
-#bindkey "^[[1;5A" focus up            # Ctrl-up    - go to prev region (C-a <tab>)
-bindkey "^[[A" focus up            # Ctrl-up    - go to prev region (C-a <tab>)
+bindkey "^[[A" focus up            # Ctrl-up    - go to prev region (C-a <tab>)  # PUTTY
+#bindkey "^[[1;5A" focus up            # Ctrl-up    - go to prev region (C-a <tab>)  # Hyper
 
-#bindkey "^[OB" focus               # Ctrl-down  - go to next region (C-a <tab>)
-#bindkey "^[[1;5B" focus               # Ctrl-down  - go to next region (C-a <tab>)
-bindkey "^[[B" focus               # Ctrl-down  - go to next region (C-a <tab>)
+bindkey "^[[B" focus               # Ctrl-down  - go to next region (C-a <tab>)  # PUTTY
+#bindkey "^[[1;5A" focus               # Ctrl-down  - go to next region (C-a <tab>)  # Hyper
 
-#bindkey "^[OD" prev                # Ctrl-left  - go to prev window (C-a p)
-#bindkey "^[[1;5D" prev                # Ctrl-left  - go to prev window (C-a p)
-bindkey "^[[D" prev                # Ctrl-left  - go to prev window (C-a p)
+bindkey "^[[D" prev                # Ctrl-left  - go to prev window (C-a p)  # PUTTY
+#bindkey "^[b" prev                # Ctrl-left  - go to prev window (C-a p)  # Hyper
 
-#bindkey "^[OC" next                # Ctrl-right - go to next window (C-a n)
-#bindkey "^[[1;5C" next                # Ctrl-right - go to next window (C-a n)
-bindkey "^[[C" next                # Ctrl-right - go to next window (C-a n)
+bindkey "^[[C" next                # Ctrl-right - go to next window (C-a n)  # PUTTY
+#bindkey "^[f" next                # Ctrl-right - go to next window (C-a n)  # Hyper
 
 bindkey -k k1 screen               # F1         - new screen (C-a c)
 bindkey -k k2 split -v             # F2         - split vertical (C-a |)
