@@ -4,12 +4,17 @@ export MPD_VERSION="v19.0"
 # Download the offline data
 ./mpd_framework/tools/prepare_offline_data.py -f deployer/${BUNDLE}/bundle_config.yml -o bin -m "${MPD_VERSION}" -t
 
+# Create a deployer container
+./tools/build/build.sh -p deployer -b test/bundle_config.yml --tag $(whoami)
+
 # Create and run a test container
 ./mpd_framework/tools/run-develop-container.sh --build
 export PYTHONPATH=${PWD}/tools/pytest
 export ANSIBLE_ACTION_PLUGINS=$(pwd)/mpd_framework/plugins/action/
 export ANSIBLE_FORCE_COLOR=True
 export IMAGE_TO_TEST=spvss-linear-video-deployer-devel-docker.dockerhub.synamedia.com/media-plane-deployer-test:kdekoninck
+
+
 
 # (Optionally) Run all tests locally
 echo "BUILDING DEPLOYER IMAGE..."; export IMAGE_TO_TEST=$(tools/build/build_deployer.sh -t kdekonin 2> /dev/null | grep 'docker run --rm -i -t ' | sed 's/docker run --rm -i -t //' | sed 's| ./perform.sh||')
