@@ -13,6 +13,6 @@ VERSION_NEW=$(echo $VERSION_OLD | cut -d '-' -f 1)-$(($(echo $VERSION_OLD | cut 
 ls -1 buildimages/deployer*/{Dockerfile,buildvars} | xargs sed -i "s/${VERSION_OLD}/${VERSION_NEW}/g"
 git add buildimages/*
 git commit -m "Update version to ${VERSION_NEW}"
-./tools/build/build.sh -p deployer-base --no-cache --push
-./tools/build/build.sh -p deployer-dev-base --no-cache --push
+./mpd_framework/tools/build/build.sh -p deployer-base --no-cache --push
+./mpd_framework/tools/build/build.sh -p deployer-dev-base --no-cache --push
 
